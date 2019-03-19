@@ -10,6 +10,12 @@ import (
 const wsdlSandbox string = "https://sandbox-api.cvent.com/soap/V200611.ASMX?WSDL"
 const wsdlProduction string = "https://api.cvent.com/soap/V200611.ASMX?WSDL"
 
+type CventAPI struct {
+	ServerURL          string
+	CventSessionHeader string
+	soap               *gosoap.Client
+}
+
 type LoginResponse struct {
 	LoginResult LoginResult
 }
@@ -21,33 +27,38 @@ type LoginResult struct {
 	ErrorMessage       string `xml:"ErrorMessage,attr"`
 }
 
-var (
-	r LoginResponse
-)
-
 // Auth Cvent API Login
-func Auth(accountNumber string, user string, pass string) (string, string, error) {
+func (c *CventAPI) Auth(accountNumber string, user string, pass string) (bool, error) {
 	soap, err := gosoap.SoapClient(wsdlProduction)
 	if err != nil {
 		log.Printf("error not expected on soap invocation: %s", err)
-		return "", "", errors.New("WSDL Load Failure")
+		return false, errors.New("WSDL Load Failure")
 	}
+	c.soap = soap
 	params := gosoap.Params{
 		"AccountNumber": accountNumber,
 		"UserName":      user,
 		"Password":      pass,
 	}
-	err = soap.Call("Login", params)
+	err = c.soap.Call("Login", params)
 	if err != nil {
-		log.Printf("error not expected on cvent call: %s", err)
-		return "", "", errors.New("SOAP Call Failure")
+		log.Printf("error not expected on cvent Login: %s", err)
+		return false, errors.New("SOAP Call Failure")
 	}
 
-	soap.Unmarshal(&r)
+	var r LoginResponse
+	c.soap.Unmarshal(&r)
 	if r.LoginResult.LoginSuccess != "true" {
 		log.Printf("login was not successful?: %s", r.LoginResult.LoginSuccess)
-		return "", "", errors.New("Login Failure")
+		return false, errors.New("Login Failure")
 	}
 
-	return r.LoginResult.ServerURL, r.LoginResult.CventSessionHeader, nil
+	c.ServerURL = r.LoginResult.ServerURL + "?WSDL"
+	c.CventSessionHeader = r.LoginResult.CventSessionHeader
+	c.soap, err = gosoap.SoapClient(c.ServerURL)
+	if err != nil {
+		log.Printf("error not expected on soap re-invocation: %s", err)
+		return false, errors.New("New WSDL Load Failure")
+	}
+	return true, nil
 }
