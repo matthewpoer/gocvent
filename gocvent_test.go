@@ -24,3 +24,14 @@ func TestAuth(t *testing.T) {
 	assert.NotEmpty(t, cvent.ServerURL)
 	assert.NotEmpty(t, cvent.CventSessionHeader)
 }
+
+func TestDescribeGlobal(t *testing.T) {
+	cvent, _, _ := genericAuth()
+	r, err := cvent.DescribeGlobal()
+	assert.Nil(t, err)
+	assert.NotEmpty(t, r.CurrentAPICalls)
+	assert.NotEmpty(t, r.CvObjectTypes)
+	assert.NotEmpty(t, r.MaxAPICalls)
+	assert.NotEmpty(t, r.MaxBatchSize)
+	assert.NotEmpty(t, r.MaxRecordSet)
+}
