@@ -4,11 +4,12 @@ import (
 	"errors"
 	"log"
 
-	"github.com/tiaguinho/gosoap"
+	"github.com/matthewpoer/gocvent/gosoap"
 )
 
 const wsdlSandbox string = "https://sandbox-api.cvent.com/soap/V200611.ASMX?WSDL"
 const wsdlProduction string = "https://api.cvent.com/soap/V200611.ASMX?WSDL"
+const xmlns string = "http://schemas.cvent.com/api/2006-11"
 
 // Auth Cvent API Login
 func (c *CventAPI) Auth(accountNumber string, user string, pass string) (bool, error) {
@@ -49,6 +50,25 @@ func (c *CventAPI) Auth(accountNumber string, user string, pass string) (bool, e
 	c.soap.HeaderParams = make(map[string]string)
 	c.soap.HeaderParams["CventSessionValue"] = c.CventSessionHeader
 	return true, nil
+}
+
+// DescribeCvObject get information about one or more Cvent objects (e.g. Event, Contact)
+func (c *CventAPI) DescribeCvObject(objectType string) (DescribeCvObjectResult, error) {
+	var r DescribeCvObjectResponse
+
+	ObjectTypes := make(map[string]interface{})
+	ObjectTypes["CvObjectType"] = objectType
+	params := gosoap.Params{
+		"ObjectTypes": ObjectTypes,
+	}
+	err := c.soap.Call("DescribeCvObject", params)
+	if err != nil {
+		log.Printf("error not expected on cvent DescribeCvObject: %s", err)
+		return r.DescribeCvObjectResult, errors.New("SOAP Call Failure")
+	}
+
+	c.soap.Unmarshal(&r)
+	return r.DescribeCvObjectResult, nil
 }
 
 // DescribeGlobal get API settings for your account

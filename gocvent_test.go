@@ -25,6 +25,15 @@ func TestAuth(t *testing.T) {
 	assert.NotEmpty(t, cvent.CventSessionHeader)
 }
 
+func TestDescribeCvObject(t *testing.T) {
+	cvent, _, _ := genericAuth()
+	r, err := cvent.DescribeCvObject("Contact")
+	assert.Nil(t, err)
+	assert.EqualValues(t, true, r.Retrieveable)
+	assert.NotEmpty(t, r.Fields)
+	// log.Printf("Object Description: %+v", r.Fields)
+}
+
 func TestDescribeGlobal(t *testing.T) {
 	cvent, _, _ := genericAuth()
 	r, err := cvent.DescribeGlobal()
