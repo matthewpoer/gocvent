@@ -26,12 +26,55 @@ func TestAuth(t *testing.T) {
 }
 
 func TestDescribeCvObject(t *testing.T) {
+	var objectList = make([]string, 3)
+	objectList[0] = "Contact"
+	objectList[1] = "Event"
+	objectList[2] = "User"
 	cvent, _, _ := genericAuth()
-	r, err := cvent.DescribeCvObject("Contact")
+	r, err := cvent.DescribeCvObject(objectList)
 	assert.Nil(t, err)
-	assert.EqualValues(t, true, r.Retrieveable)
-	assert.NotEmpty(t, r.Fields)
-	// log.Printf("Object Description: %+v", r.Fields)
+
+	// make sure that we found a DescribeCvObjectResult to represent each of our elements.
+	foundContact := false
+	foundEvent := false
+	foundUser := false
+	for _, CvObjectMetadata := range r {
+		if CvObjectMetadata.Name == "Contact" {
+			foundContact = true
+		} else if CvObjectMetadata.Name == "Event" {
+			foundEvent = true
+		} else if CvObjectMetadata.Name == "User" {
+			foundUser = true
+		}
+	}
+	assert.True(t, foundContact, "Could not find Contact Object information")
+	assert.True(t, foundEvent, "Could not find Event Object information")
+	assert.True(t, foundUser, "Could not find User Object information")
+
+	// check that we have relevant information about the out-of-box Contact field "Company"
+	foundCompanyField := false
+	for _, CvObjectMetadata := range r {
+		if CvObjectMetadata.Name == "Contact" {
+			for _, ContactField := range CvObjectMetadata.Fields {
+				if ContactField.Name == "Company" {
+					foundCompanyField = true
+				}
+			}
+		}
+	}
+	assert.True(t, foundCompanyField, "Could not find Company field on the Contact Object")
+
+	// look for at least a single CustomField on any of the objects... this
+	// will break if the Cvent system has zero custom fields
+	foundAnyCustomField := false
+	for _, CvObjectMetadata := range r {
+		for _, CustomField := range CvObjectMetadata.CustomFields {
+			if CustomField.Name != "" {
+				foundAnyCustomField = true
+			}
+		}
+	}
+	assert.True(t, foundAnyCustomField, "Could not find any Custom Fields")
 }
 
 func TestDescribeGlobal(t *testing.T) {

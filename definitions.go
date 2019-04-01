@@ -29,7 +29,7 @@ type CustomField struct {
 
 // DescribeCvObjectResponse part of the DescribeCvObject API Calls
 type DescribeCvObjectResponse struct {
-	DescribeCvObjectResult DescribeCvObjectResult `xml:">DescribeCvObjectResult"`
+	DescribeCvObjectResults []DescribeCvObjectResult `xml:"DescribeCvObjectResult>DescribeCvObjectResult"`
 }
 
 // DescribeCvObjectResult part of the DescribeCvObject API Calls

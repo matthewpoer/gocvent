@@ -53,22 +53,21 @@ func (c *CventAPI) Auth(accountNumber string, user string, pass string) (bool, e
 }
 
 // DescribeCvObject get information about one or more Cvent objects (e.g. Event, Contact)
-func (c *CventAPI) DescribeCvObject(objectType string) (DescribeCvObjectResult, error) {
+func (c *CventAPI) DescribeCvObject(objectTypes []string) ([]DescribeCvObjectResult, error) {
 	var r DescribeCvObjectResponse
 
-	ObjectTypes := make(map[string]interface{})
-	ObjectTypes["CvObjectType"] = objectType
-	params := gosoap.Params{
-		"ObjectTypes": ObjectTypes,
-	}
+	params := gosoap.Params{}
+	ObjectTypes := make(map[string][]string)
+	ObjectTypes["CvObjectType"] = objectTypes
+	params["ObjectTypes"] = ObjectTypes
 	err := c.soap.Call("DescribeCvObject", params)
 	if err != nil {
 		log.Printf("error not expected on cvent DescribeCvObject: %s", err)
-		return r.DescribeCvObjectResult, errors.New("SOAP Call Failure")
+		return r.DescribeCvObjectResults, errors.New("SOAP Call Failure")
 	}
 
 	c.soap.Unmarshal(&r)
-	return r.DescribeCvObjectResult, nil
+	return r.DescribeCvObjectResults, nil
 }
 
 // DescribeGlobal get API settings for your account

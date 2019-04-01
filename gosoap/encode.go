@@ -73,6 +73,11 @@ func recursiveEncode(hm interface{}) {
 						{Name: xml.Name{Space: "", Local: "xmlns"}, Value: "http://schemas.cvent.com/api/2006-11"},
 					},
 				}
+				tokens = append(tokens, t)
+				recursiveEncode(v.MapIndex(key).Interface())
+				tokens = append(tokens, xml.EndElement{Name: t.Name})
+			} else if key.String() == "CvObjectType" {
+				recursiveEncode(v.MapIndex(key).Interface())
 			} else {
 				t = xml.StartElement{
 					Name: xml.Name{
@@ -80,15 +85,23 @@ func recursiveEncode(hm interface{}) {
 						Local: key.String(),
 					},
 				}
+				tokens = append(tokens, t)
+				recursiveEncode(v.MapIndex(key).Interface())
+				tokens = append(tokens, xml.EndElement{Name: t.Name})
 			}
-
-			tokens = append(tokens, t)
-			recursiveEncode(v.MapIndex(key).Interface())
-			tokens = append(tokens, xml.EndElement{Name: t.Name})
 		}
 	case reflect.Slice:
 		for i := 0; i < v.Len(); i++ {
-			recursiveEncode(v.Index(i).Interface())
+			var t xml.StartElement
+			t = xml.StartElement{
+				Name: xml.Name{
+					Space: "",
+					Local: "CvObjectType",
+				},
+			}
+			tokens = append(tokens, t)
+			tokens = append(tokens, xml.CharData(v.Index(i).String()))
+			tokens = append(tokens, xml.EndElement{Name: t.Name})
 		}
 	case reflect.String:
 		content := xml.CharData(v.String())
