@@ -117,3 +117,44 @@ func TestDescribeGlobal(t *testing.T) {
 	assert.NotEmpty(t, r.MaxBatchSize)
 	assert.NotEmpty(t, r.MaxRecordSet)
 }
+
+func TestSearchNoFilter(t *testing.T) {
+	cvent, _, _ := genericAuth()
+	r, err := cvent.Search("Contact", []Filter{})
+	assert.Nil(t, err)
+	assert.Greater(t, len(r.Ids), 0)
+}
+
+func TestSearchWithFilters(t *testing.T) {
+	Filters := make([]Filter, 2)
+	Filters[0] = Filter{
+		Field:    "Company",
+		Operator: "Not Equal to",
+		Value:    "Some Junk Value",
+	}
+	Filters[1] = Filter{
+		Field:    "LastName",
+		Operator: "Equals",
+		Value:    "Smith",
+	}
+	cvent, _, _ := genericAuth()
+	r, err := cvent.Search("Contact", Filters)
+	assert.Nil(t, err)
+	assert.Greater(t, len(r.Ids), 0)
+
+	numberOfSmiths := len(r.Ids)
+
+	Filters = make([]Filter, 1)
+	Filters[0] = Filter{
+		Field:    "LastName",
+		Operator: "Includes",
+	}
+	Filters[0].ValueArray = append(Filters[0].ValueArray, "Smith")
+	Filters[0].ValueArray = append(Filters[0].ValueArray, "Johnson")
+	Filters[0].ValueArray = append(Filters[0].ValueArray, "Williams")
+	Filters[0].ValueArray = append(Filters[0].ValueArray, "Jones")
+	r, err = cvent.Search("Contact", Filters)
+	assert.Nil(t, err)
+	assert.Greater(t, len(r.Ids), 0)
+	assert.Greater(t, len(r.Ids), numberOfSmiths)
+}

@@ -1,0 +1,9 @@
+<SearchResponse xmlns="http://api.cvent.com/2006-11">
+    <SearchResult xmlns="http://schemas.cvent.com/api/2006-11">
+        <Id>C85058EE-5847-4783-823E-000000000000</Id>
+        <Id>DBDC200C-DD98-48F5-A91A-000000000000</Id>
+        <Id>1830A826-F7E6-4A16-81D8-000000000000</Id>
+        <Id>CE0EC9F0-8016-4F24-8CEA-000000000000</Id>
+        <Id>FD275485-934D-4BC6-A93F-000000000000</Id>
+    </SearchResult>
+</SearchResponse>

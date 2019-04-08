@@ -84,3 +84,23 @@ func (c *CventAPI) DescribeGlobal() (DescribeGlobalResult, error) {
 	c.soap.Unmarshal(&r)
 	return r.DescribeGlobalResult, nil
 }
+
+// Search is used to Search any Cvent Object using an optional set of filters
+func (c *CventAPI) Search(ObjectType string, Filters []Filter) (SearchResult, error) {
+	var r SearchResponse
+
+	params := gosoap.Params{}
+	params["ObjectType"] = ObjectType
+	CvSearchObject := make(map[string][]Filter)
+	CvSearchObject["Filter"] = Filters
+	params["CvSearchObject"] = CvSearchObject
+
+	err := c.soap.Call("Search", params)
+	if err != nil {
+		log.Printf("error not expected on cvent DescribeCvObject: %s", err)
+		return r.SearchResult, errors.New("SOAP Call Failure")
+	}
+
+	c.soap.Unmarshal(&r)
+	return r.SearchResult, nil
+}

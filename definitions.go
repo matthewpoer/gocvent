@@ -89,6 +89,14 @@ type Field struct {
 	LookUpDetails      []LookUpDetail `xml:"LookUpDetail"`
 }
 
+// Filter is used by Search API calls
+type Filter struct {
+	Field      string   `xml:"Field"`
+	Operator   string   `xml:"Operator"`
+	Value      string   `xml:"Value"`
+	ValueArray []string `xml:"ValueArray"`
+}
+
 // LoginResponse
 type LoginResponse struct {
 	LoginResult LoginResult
@@ -106,4 +114,14 @@ type LoginResult struct {
 // as part of a Field defintion
 type LookUpDetail struct {
 	Value string `xml:"Value,attr"`
+}
+
+// SearchResponse
+type SearchResponse struct {
+	SearchResult SearchResult
+}
+
+// SearchResult
+type SearchResult struct {
+	Ids []string `xml:"Id"`
 }

@@ -63,7 +63,7 @@ func recursiveEncode(hm interface{}) {
 	case reflect.Map:
 		for _, key := range v.MapKeys() {
 			var t xml.StartElement
-			if key.String() == "ObjectTypes" {
+			if key.String() == "ObjectTypes" || key.String() == "CvSearchObject" {
 				t = xml.StartElement{
 					Name: xml.Name{
 						Space: "",
@@ -73,10 +73,21 @@ func recursiveEncode(hm interface{}) {
 						{Name: xml.Name{Space: "", Local: "xmlns"}, Value: "http://schemas.cvent.com/api/2006-11"},
 					},
 				}
+				if key.String() == "CvSearchObject" {
+					t.Attr = append(t.Attr, xml.Attr{
+						Name: xml.Name{
+							Space: "",
+							Local: "SearchType",
+						},
+						Value: "AndSearch",
+					})
+				}
 				tokens = append(tokens, t)
 				recursiveEncode(v.MapIndex(key).Interface())
 				tokens = append(tokens, xml.EndElement{Name: t.Name})
 			} else if key.String() == "CvObjectType" {
+				recursiveEncode(v.MapIndex(key).Interface())
+			} else if key.String() == "Filter" {
 				recursiveEncode(v.MapIndex(key).Interface())
 			} else {
 				t = xml.StartElement{
@@ -91,17 +102,84 @@ func recursiveEncode(hm interface{}) {
 			}
 		}
 	case reflect.Slice:
+		elementName := "CvObjectType"
+		for i := 0; i < v.Len(); i++ {
+			if v.Index(i).Type().String() == "gocvent.Filter" {
+				elementName = "Filter"
+			}
+		}
 		for i := 0; i < v.Len(); i++ {
 			var t xml.StartElement
 			t = xml.StartElement{
 				Name: xml.Name{
 					Space: "",
-					Local: "CvObjectType",
+					Local: elementName,
 				},
 			}
-			tokens = append(tokens, t)
-			tokens = append(tokens, xml.CharData(v.Index(i).String()))
-			tokens = append(tokens, xml.EndElement{Name: t.Name})
+			if elementName == "CvObjectType" {
+				tokens = append(tokens, t)
+				tokens = append(tokens, xml.CharData(v.Index(i).String()))
+				tokens = append(tokens, xml.EndElement{Name: t.Name})
+			} else if elementName == "Filter" {
+				tokens = append(tokens, t)
+
+				tField := xml.StartElement{
+					Name: xml.Name{
+						Space: "",
+						Local: "Field",
+					},
+				}
+				tokens = append(tokens, tField)
+				tokens = append(tokens, xml.CharData(v.Index(i).FieldByName("Field").String()))
+				tokens = append(tokens, xml.EndElement{Name: tField.Name})
+
+				tOperator := xml.StartElement{
+					Name: xml.Name{
+						Space: "",
+						Local: "Operator",
+					},
+				}
+				tokens = append(tokens, tOperator)
+				tokens = append(tokens, xml.CharData(v.Index(i).FieldByName("Operator").String()))
+				tokens = append(tokens, xml.EndElement{Name: tOperator.Name})
+
+				if v.Index(i).FieldByName("Value").String() != "" {
+					tValue := xml.StartElement{
+						Name: xml.Name{
+							Space: "",
+							Local: "Value",
+						},
+					}
+					tokens = append(tokens, tValue)
+					tokens = append(tokens, xml.CharData(v.Index(i).FieldByName("Value").String()))
+					tokens = append(tokens, xml.EndElement{Name: tValue.Name})
+				}
+				if v.Index(i).FieldByName("ValueArray").Len() > 0 {
+					tValue := xml.StartElement{
+						Name: xml.Name{
+							Space: "",
+							Local: "ValueArray",
+						},
+					}
+					tokens = append(tokens, tValue)
+
+					for vA := 0; vA < v.Index(i).FieldByName("ValueArray").Len(); vA++ {
+						tValue := xml.StartElement{
+							Name: xml.Name{
+								Space: "",
+								Local: "Value",
+							},
+						}
+						tokens = append(tokens, tValue)
+						tokens = append(tokens, xml.CharData(v.Index(i).FieldByName("ValueArray").Index(vA).String()))
+						tokens = append(tokens, xml.EndElement{Name: tValue.Name})
+					}
+
+					tokens = append(tokens, xml.EndElement{Name: tValue.Name})
+				}
+
+				tokens = append(tokens, xml.EndElement{Name: t.Name})
+			}
 		}
 	case reflect.String:
 		content := xml.CharData(v.String())
