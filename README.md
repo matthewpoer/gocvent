@@ -1,4 +1,5 @@
-# gocvent
+# gocvent [![Go Report Card](https://goreportcard.com/badge/github.com/matthewpoer/gocvent)](https://goreportcard.com/report/github.com/matthewpoer/gocvent)
+
 A Golang wrapper for some common [Cvent SOAP API](https://developers.cvent.com/documentation/soap-api/) functions.
 
 ## Thanks to gosoap
