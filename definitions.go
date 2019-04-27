@@ -97,12 +97,12 @@ type Filter struct {
 	ValueArray []string `xml:"ValueArray"`
 }
 
-// LoginResponse
+// LoginResponse wrapper for LoginResult
 type LoginResponse struct {
 	LoginResult LoginResult
 }
 
-// LoginResult
+// LoginResult contains information about the Login attempt
 type LoginResult struct {
 	LoginSuccess       string `xml:"LoginSuccess,attr"`
 	CventSessionHeader string `xml:"CventSessionHeader,attr"`
@@ -111,17 +111,17 @@ type LoginResult struct {
 }
 
 // LookUpDetail holds values available in a list (i.e. a dropdown or picklist)
-// as part of a Field defintion
+// as part of a Field definition
 type LookUpDetail struct {
 	Value string `xml:"Value,attr"`
 }
 
-// SearchResponse
+// SearchResponse wrapper for SearchResult
 type SearchResponse struct {
 	SearchResult SearchResult
 }
 
-// SearchResult
+// SearchResult contains information about the IDs returned by a Search API Call
 type SearchResult struct {
 	Ids []string `xml:"Id"`
 }
