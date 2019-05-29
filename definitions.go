@@ -10,6 +10,15 @@ type CventAPI struct {
 	soap               *gosoap.Client
 }
 
+// CvObject is a generic result of a Retrieve call, so this is mostly just metadata fields
+type CvObject struct {
+	Type             string `xml:"type,attr"`
+	ID               string `xml:"Id,attr"`
+	CreatedBy        string `xml:"CreatedBy,attr"`
+	CreatedDate      string `xml:"CreatedDate,attr"`
+	LastModifiedDate string `xml:"LastModifiedDate,attr"`
+}
+
 // AnswerDetail looks and smells a lot like LookUpDetail IMO
 type AnswerDetail struct {
 	AnswerText string `xml:"AnswerText,attr"`
@@ -114,6 +123,16 @@ type LoginResult struct {
 // as part of a Field definition
 type LookUpDetail struct {
 	Value string `xml:"Value,attr"`
+}
+
+// RetrieveResponse wrapper for RetrieveResult
+type RetrieveResponse struct {
+	RetrieveResult RetrieveResult
+}
+
+// RetrieveResult contains information about the records returned by a Retrieve API Call
+type RetrieveResult struct {
+	CvObject CvObject `xml:"CvObject"`
 }
 
 // SearchResponse wrapper for SearchResult

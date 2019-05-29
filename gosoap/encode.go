@@ -89,6 +89,29 @@ func recursiveEncode(hm interface{}) {
 				recursiveEncode(v.MapIndex(key).Interface())
 			} else if key.String() == "Filter" {
 				recursiveEncode(v.MapIndex(key).Interface())
+			} else if key.String() == "Ids" {
+				IDs := xml.StartElement{
+					Name: xml.Name{
+						Space: "",
+						Local: "Ids",
+					},
+					Attr: []xml.Attr{
+						{Name: xml.Name{Space: "", Local: "xmlns"}, Value: "http://schemas.cvent.com/api/2006-11"},
+					},
+				}
+				ID := xml.StartElement{
+					Name: xml.Name{
+						Space: "",
+						Local: "Id",
+					},
+				}
+
+				tokens = append(tokens, IDs)
+				tokens = append(tokens, ID)
+				tokens = append(tokens, xml.CharData(fmt.Sprintf("%s", v.MapIndex(key))))
+				tokens = append(tokens, xml.EndElement{Name: ID.Name})
+				tokens = append(tokens, xml.EndElement{Name: IDs.Name})
+
 			} else {
 				t = xml.StartElement{
 					Name: xml.Name{

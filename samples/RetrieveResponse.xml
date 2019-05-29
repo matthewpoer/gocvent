@@ -1,0 +1,11 @@
+<RetrieveResponse xmlns="http://api.cvent.com/2006-11">
+    <RetrieveResult xmlns="http://schemas.cvent.com/api/2006-11">
+        <CvObject xsi:type="User" Id="9233A32D-DA71-45A4-B439-D990C7118EDB" Active="true" Address1="" Address2="" Address3="" AllEventVisibility="false" AllRFPVisibility="false" AllSurveyVisibility="false" ChangePasswordOnLogin="false" City="" Company="" Country="" CountryCode="" CreatedBy="KwickyKoala" CreatedDate="2019-01-02T08:47:21.763" DefaultContactGroupId="00000000-0000-0000-0000-000000000000" Email="KwickyKoala@gmail.com" FederatedId="" FirstName="Kwicky" HomeFax="" HomePhone="" LastModifiedBy="KwickyKoala" LastModifiedDate="2019-01-15T09:45:45.173" LastName="Koala" MobilePhone="" Pager="" PostalCode="" Prefix="" State="" StateCode="" Title="" Username="KwickyKoala" UserType="Application" UserRole="Kwicky Koala Role" UserRoleId="0841F25C-82E4-4330-A156-123456789123" WorkFax="" WorkPhone="" LastLoginDate="2019-01-15T09:45:45.307">
+            <UserGroupDetail UserGroupName="Kwicky Koala Group" UserGroupId="3C5821EF-A8E8-4081-9E24-4D788FA64948" />
+            <VisibilityDefaults UserGroupName="Kwicky Koala Group" VisibilityType="Event" UserGroupId="3C5821EF-A8E8-4081-9E24-4D788FA64948" />
+            <VisibilityDefaults UserGroupName="Kwicky Koala Group" VisibilityType="RFP" UserGroupId="3C5821EF-A8E8-4081-9E24-4D788FA64948" />
+            <VisibilityDefaults UserGroupName="Kwicky Koala Group" VisibilityType="Meeting Requests" UserGroupId="3C5821EF-A8E8-4081-9E24-4D788FA64948" />
+            <VisibilityDefaults UserGroupName="Kwicky Koala Group" VisibilityType="RFI" UserGroupId="3C5821EF-A8E8-4081-9E24-4D788FA64948" />
+        </CvObject>
+    </RetrieveResult>
+</RetrieveResponse>

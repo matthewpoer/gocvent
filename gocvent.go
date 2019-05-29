@@ -2,6 +2,9 @@ package gocvent
 
 import (
 	"errors"
+	"io/ioutil"
+	"os/exec"
+	"strings"
 
 	"github.com/matthewpoer/gocvent/gosoap"
 )
@@ -89,6 +92,25 @@ func (c *CventAPI) DescribeGlobal() (DescribeGlobalResult, error) {
 	return r.DescribeGlobalResult, nil
 }
 
+// Retrieve is used to get a single Cvent Object
+func (c *CventAPI) Retrieve(ObjectType string, ID string, objectDef interface{}) error {
+
+	params := gosoap.Params{}
+	params["ObjectType"] = ObjectType
+	params["Ids"] = ID
+
+	err := c.soap.Call("Retrieve", params)
+	if err != nil {
+		return errors.New("CventAPI.Retrieve Soap Retrieve Failure: " + err.Error())
+	}
+
+	err = c.soap.Unmarshal(&objectDef)
+	if err != nil {
+		return errors.New("CventAPI.Retrieve received SOAP Fault: " + err.Error())
+	}
+	return nil
+}
+
 // Search is used to Search any Cvent Object using an optional set of filters
 func (c *CventAPI) Search(ObjectType string, Filters []Filter) (SearchResult, error) {
 	var r SearchResponse
@@ -109,4 +131,81 @@ func (c *CventAPI) Search(ObjectType string, Filters []Filter) (SearchResult, er
 		return r.SearchResult, errors.New("CventAPI.Search received SOAP Fault: " + err.Error())
 	}
 	return r.SearchResult, nil
+}
+
+// StructGen is used to generate a Golang struct based on the fields in a CvObject
+func (c *CventAPI) StructGen(filePath string, objectType string) error {
+
+	// get fields and info. about the CvObject
+	var objectList = make([]string, 1)
+	objectList[0] = objectType
+	r, err := c.DescribeCvObject(objectList)
+	if err != nil {
+		return err
+	}
+	foundObjectType := false
+	for _, CvObjectMetadata := range r {
+		if CvObjectMetadata.Name == objectType {
+			foundObjectType = true
+		}
+	}
+	if !foundObjectType {
+		return errors.New("DescribeCvObject failure")
+	}
+
+	output := "package gocvent\n"
+	output += "// " + objectType + "RetrieveResult defines the result wrapper\n"
+	output += "type " + objectType + "RetrieveResult struct {\n"
+	output += "CvObject " + objectType + " `xml:\"RetrieveResult>CvObject\"`\n"
+	output += "}\n"
+	output += "// " + objectType + " defines the CvObject\n"
+	output += "type " + objectType + " struct {\n"
+
+	for _, CvObjectMetadata := range r {
+		if CvObjectMetadata.Name == objectType {
+			for _, objectField := range CvObjectMetadata.Fields {
+
+				// ignore anything that isn't on the object we're tracking
+				if objectField.ObjectLocation != "/"+objectType {
+					continue
+				}
+
+				dataType := "string"
+				if objectField.DataType == "Boolean" {
+					dataType = "bool"
+				}
+				if objectField.DataType == "Date Time" {
+					dataType = "string" // @todo should be whatever golang likes to call datetime
+				}
+
+				xmlFieldName := strings.TrimSpace(objectField.Name)             // drop leading/trailing spaces
+				structFieldname := strings.Replace(xmlFieldName, " ", "", -1)   // don't allow spaces in field name
+				structFieldname = strings.Replace(structFieldname, "(", "", -1) // don't allow parens in field name
+				structFieldname = strings.Replace(structFieldname, ")", "", -1) // don't allow parens in field name
+
+				output += "\t" + structFieldname + " " +
+					dataType +
+					" `xml:\"" + xmlFieldName + ",attr\"`  " +
+					"\n"
+			}
+		}
+	}
+
+	output += "}\n"
+
+	fileName := filePath + "/" + objectType + ".go"
+	data := []byte(output)
+	err = ioutil.WriteFile(fileName, data, 0644)
+	if err != nil {
+		return err
+	}
+
+	// run gofmt on the new definitions file
+	cmd := exec.Command("gofmt", "-w", fileName)
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
