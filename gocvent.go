@@ -28,7 +28,11 @@ func (c *CventAPI) Auth(accountNumber string, user string, pass string) (bool, e
 	}
 
 	var r LoginResponse
-	c.soap.Unmarshal(&r)
+	err = c.soap.Unmarshal(&r)
+	if err != nil {
+		return false, errors.New("CventAPI.Auth received SOAP Fault: " + err.Error())
+	}
+
 	if r.LoginResult.LoginSuccess != "true" {
 		return false, errors.New("CventAPI.Auth Login Failure: " + r.LoginResult.ErrorMessage)
 	}
@@ -60,7 +64,10 @@ func (c *CventAPI) DescribeCvObject(objectTypes []string) ([]DescribeCvObjectRes
 		return r.DescribeCvObjectResults, errors.New("CventAPI.DescribeCvObject Soap DescribeCvObject Failure: " + err.Error())
 	}
 
-	c.soap.Unmarshal(&r)
+	err = c.soap.Unmarshal(&r)
+	if err != nil {
+		return r.DescribeCvObjectResults, errors.New("CventAPI.DescribeCvObject received SOAP Fault: " + err.Error())
+	}
 	return r.DescribeCvObjectResults, nil
 }
 
@@ -74,7 +81,11 @@ func (c *CventAPI) DescribeGlobal() (DescribeGlobalResult, error) {
 		return r.DescribeGlobalResult, errors.New("CventAPI.DescribeGlobal Soap DescribeGlobal Failure: " + err.Error())
 	}
 
-	c.soap.Unmarshal(&r)
+	err = c.soap.Unmarshal(&r)
+	if err != nil {
+		return r.DescribeGlobalResult, errors.New("CventAPI.DescribeGlobal received SOAP Fault: " + err.Error())
+	}
+
 	return r.DescribeGlobalResult, nil
 }
 
@@ -93,6 +104,9 @@ func (c *CventAPI) Search(ObjectType string, Filters []Filter) (SearchResult, er
 		return r.SearchResult, errors.New("CventAPI.Search Soap Search Failure: " + err.Error())
 	}
 
-	c.soap.Unmarshal(&r)
+	err = c.soap.Unmarshal(&r)
+	if err != nil {
+		return r.SearchResult, errors.New("CventAPI.Search received SOAP Fault: " + err.Error())
+	}
 	return r.SearchResult, nil
 }

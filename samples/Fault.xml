@@ -1,0 +1,13 @@
+<soap:Fault>
+    <faultcode xmlns:q0="http://schemas.cvent.com/api/2006-11">q0:CV10001</faultcode>
+    <faultstring>INVALID_SOAP_REQUEST</faultstring>
+    <faultactor>http://api.cvent.com/soap/V200611.ASMX</faultactor>
+    <detail>
+        <Main-Exception xmlns="http://schemas.cvent.com/api/2006-11">
+            <Exception-Detail />
+        </Main-Exception>
+        <Secondary-Exception t:has-more="yes"
+            xmlns:t="http://schemas.cvent.com/api/2006-11"
+            xmlns="http://schemas.cvent.com/api/2006-11" />
+    </detail>
+</soap:Fault>

@@ -135,6 +135,20 @@ func TestDescribeCvObjectSingle(t *testing.T) {
 	assert.True(t, foundCompanyField, "Could not find Company field on the Contact Object")
 }
 
+func TestDescribeCvObjectSingleBadObject(t *testing.T) {
+	cvent, success, err := genericAuth()
+	if err != nil || !success {
+		t.Errorf("TestDescribeCvObjectSingleBadObject fails because authorization or invocation failed")
+		return
+	}
+
+	var objectList = make([]string, 1)
+	objectList[0] = "SomeFakeObjectName"
+
+	r, err := cvent.DescribeCvObject(objectList)
+	assert.NotEmpty(t, err)
+	assert.Zero(t, len(r))
+}
 func TestDescribeGlobal(t *testing.T) {
 	cvent, success, err := genericAuth()
 	if err != nil || !success {
