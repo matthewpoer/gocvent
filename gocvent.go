@@ -2,7 +2,6 @@ package gocvent
 
 import (
 	"errors"
-	"log"
 
 	"github.com/matthewpoer/gocvent/gosoap"
 )
@@ -15,8 +14,7 @@ const xmlns string = "http://schemas.cvent.com/api/2006-11"
 func (c *CventAPI) Auth(accountNumber string, user string, pass string) (bool, error) {
 	soap, err := gosoap.SoapClient(wsdlProduction)
 	if err != nil {
-		log.Printf("error not expected on soap invocation: %s", err)
-		return false, errors.New("WSDL Load Failure")
+		return false, errors.New("CventAPI.Auth error loading WSDL: " + err.Error())
 	}
 	c.soap = soap
 	params := gosoap.Params{
@@ -26,15 +24,13 @@ func (c *CventAPI) Auth(accountNumber string, user string, pass string) (bool, e
 	}
 	err = c.soap.Call("Login", params)
 	if err != nil {
-		log.Printf("error not expected on cvent Login: %s", err)
-		return false, errors.New("SOAP Call Failure")
+		return false, errors.New("CventAPI.Auth Soap Login Failure: " + err.Error())
 	}
 
 	var r LoginResponse
 	c.soap.Unmarshal(&r)
 	if r.LoginResult.LoginSuccess != "true" {
-		log.Printf("login was not successful?: %s", r.LoginResult.LoginSuccess)
-		return false, errors.New("Login Failure")
+		return false, errors.New("CventAPI.Auth Login Failure: " + r.LoginResult.ErrorMessage)
 	}
 
 	// store the retrieved Server URL and Header, and go ahead and set the soap
@@ -43,8 +39,7 @@ func (c *CventAPI) Auth(accountNumber string, user string, pass string) (bool, e
 	c.CventSessionHeader = r.LoginResult.CventSessionHeader
 	c.soap, err = gosoap.SoapClient(c.ServerURL)
 	if err != nil {
-		log.Printf("error not expected on soap re-invocation: %s", err)
-		return false, errors.New("New WSDL Load Failure")
+		return false, errors.New("CventAPI.Auth error loading revised WSDL: " + err.Error())
 	}
 	c.soap.HeaderName = "CventSessionHeader"
 	c.soap.HeaderParams = make(map[string]string)
@@ -62,8 +57,7 @@ func (c *CventAPI) DescribeCvObject(objectTypes []string) ([]DescribeCvObjectRes
 	params["ObjectTypes"] = ObjectTypes
 	err := c.soap.Call("DescribeCvObject", params)
 	if err != nil {
-		log.Printf("error not expected on cvent DescribeCvObject: %s", err)
-		return r.DescribeCvObjectResults, errors.New("SOAP Call Failure")
+		return r.DescribeCvObjectResults, errors.New("CventAPI.DescribeCvObject Soap DescribeCvObject Failure: " + err.Error())
 	}
 
 	c.soap.Unmarshal(&r)
@@ -77,8 +71,7 @@ func (c *CventAPI) DescribeGlobal() (DescribeGlobalResult, error) {
 	params := gosoap.Params{}
 	err := c.soap.Call("DescribeGlobal", params)
 	if err != nil {
-		log.Printf("error not expected on cvent DescribeGlobal: %s", err)
-		return r.DescribeGlobalResult, errors.New("SOAP Call Failure")
+		return r.DescribeGlobalResult, errors.New("CventAPI.DescribeGlobal Soap DescribeGlobal Failure: " + err.Error())
 	}
 
 	c.soap.Unmarshal(&r)
@@ -97,8 +90,7 @@ func (c *CventAPI) Search(ObjectType string, Filters []Filter) (SearchResult, er
 
 	err := c.soap.Call("Search", params)
 	if err != nil {
-		log.Printf("error not expected on cvent DescribeCvObject: %s", err)
-		return r.SearchResult, errors.New("SOAP Call Failure")
+		return r.SearchResult, errors.New("CventAPI.Search Soap Search Failure: " + err.Error())
 	}
 
 	c.soap.Unmarshal(&r)

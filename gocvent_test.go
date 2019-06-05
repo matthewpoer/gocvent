@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,19 +21,36 @@ func genericAuth() (CventAPI, bool, error) {
 
 func TestAuth(t *testing.T) {
 	cvent, success, err := genericAuth()
+	if err != nil {
+		log.Printf("TestAuth err from genericAuth(): %s", err)
+	}
 	assert.Nil(t, err)
+
+	if success != true {
+		log.Println("TestAuth success is false")
+	}
 	assert.True(t, success)
+
 	assert.NotEmpty(t, cvent.ServerURL)
 	assert.NotEmpty(t, cvent.CventSessionHeader)
 }
 
 func TestDescribeCvObjectMultiple(t *testing.T) {
+	cvent, success, err := genericAuth()
+	if err != nil || !success {
+		t.Errorf("TestDescribeCvObjectMultiple fails because authorization or invocation failed")
+		return
+	}
+
 	var objectList = make([]string, 3)
 	objectList[0] = "Contact"
 	objectList[1] = "Event"
 	objectList[2] = "User"
-	cvent, _, _ := genericAuth()
+
 	r, err := cvent.DescribeCvObject(objectList)
+	if err != nil {
+		log.Printf("TestDescribeCvObjectMultiple err from cvent.DescribeCvObject: %s", err)
+	}
 	assert.Nil(t, err)
 
 	// make sure that we found a DescribeCvObjectResult to represent each of our elements.
@@ -78,10 +97,19 @@ func TestDescribeCvObjectMultiple(t *testing.T) {
 }
 
 func TestDescribeCvObjectSingle(t *testing.T) {
+	cvent, success, err := genericAuth()
+	if err != nil || !success {
+		t.Errorf("TestDescribeCvObjectSingle fails because authorization or invocation failed")
+		return
+	}
+
 	var objectList = make([]string, 1)
 	objectList[0] = "Contact"
-	cvent, _, _ := genericAuth()
+
 	r, err := cvent.DescribeCvObject(objectList)
+	if err != nil {
+		log.Printf("TestDescribeCvObjectMultiple err from cvent.DescribeCvObject: %s", err)
+	}
 	assert.Nil(t, err)
 
 	// make sure that we found a DescribeCvObjectResult to represent each of our elements.
@@ -108,8 +136,16 @@ func TestDescribeCvObjectSingle(t *testing.T) {
 }
 
 func TestDescribeGlobal(t *testing.T) {
-	cvent, _, _ := genericAuth()
+	cvent, success, err := genericAuth()
+	if err != nil || !success {
+		t.Errorf("TestDescribeGlobal fails because authorization or invocation failed")
+		return
+	}
+
 	r, err := cvent.DescribeGlobal()
+	if err != nil {
+		log.Printf("TestDescribeGlobal err from cvent.DescribeGlobal: %s", err)
+	}
 	assert.Nil(t, err)
 	assert.NotEmpty(t, r.CurrentAPICalls)
 	assert.NotEmpty(t, r.CvObjectTypes)
@@ -119,13 +155,27 @@ func TestDescribeGlobal(t *testing.T) {
 }
 
 func TestSearchNoFilter(t *testing.T) {
-	cvent, _, _ := genericAuth()
+	cvent, success, err := genericAuth()
+	if err != nil || !success {
+		t.Errorf("TestSearchNoFilter fails because authorization or invocation failed")
+		return
+	}
+
 	r, err := cvent.Search("Contact", []Filter{})
+	if err != nil {
+		log.Printf("TestSearchNoFilter err from cvent.Search: %s", err)
+	}
 	assert.Nil(t, err)
 	assert.Greater(t, len(r.Ids), 0)
 }
 
 func TestSearchWithFilters(t *testing.T) {
+	cvent, success, err := genericAuth()
+	if err != nil || !success {
+		t.Errorf("TestSearchWithFilters fails because authorization or invocation failed")
+		return
+	}
+
 	Filters := make([]Filter, 2)
 	Filters[0] = Filter{
 		Field:    "Company",
@@ -137,8 +187,11 @@ func TestSearchWithFilters(t *testing.T) {
 		Operator: "Equals",
 		Value:    "Smith",
 	}
-	cvent, _, _ := genericAuth()
+
 	r, err := cvent.Search("Contact", Filters)
+	if err != nil {
+		log.Printf("TestSearchWithFilters err from cvent.Search: %s", err)
+	}
 	assert.Nil(t, err)
 	assert.Greater(t, len(r.Ids), 0)
 
@@ -154,6 +207,9 @@ func TestSearchWithFilters(t *testing.T) {
 	Filters[0].ValueArray = append(Filters[0].ValueArray, "Williams")
 	Filters[0].ValueArray = append(Filters[0].ValueArray, "Jones")
 	r, err = cvent.Search("Contact", Filters)
+	if err != nil {
+		log.Printf("TestSearchWithFilters err from cvent.Search: %s", err)
+	}
 	assert.Nil(t, err)
 	assert.Greater(t, len(r.Ids), 0)
 	assert.Greater(t, len(r.Ids), numberOfSmiths)
